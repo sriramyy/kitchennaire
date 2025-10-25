@@ -16,7 +16,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const API_BASE = 'http://172.20.10.2:8000';
 
 export default function RecipeScreen() {
-  const { recipe, loadRecipeFromLink, loading } = useKitchen();
+  const { recipe, loadRecipeFromLink, loading, setCurrentVideoId } = useKitchen();
   const [link, setLink] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -45,6 +45,12 @@ export default function RecipeScreen() {
 
       const data = JSON.parse(text);
       console.log('Backend responded:', data);
+      
+      if (data.video_id) {
+        setCurrentVideoId(data.video_id);
+        console.log('Updated video ID:', data.video_id);
+      }
+      
       return data;
     } catch (error: any) {
       console.error('Failed to submit URL:', error);

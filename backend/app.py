@@ -10,33 +10,35 @@ logger = logging.getLogger("kitchennaire-backend")
 
 def getVideoId(link):
     """Gets the video Id from a valid yt link"""
-
-    result = ""
-
-    if "youtu.be" in link:
-        delim = "youtu.be/" # short links only have stuff after /
-    else:
-        delim = "watch?v=" # long links have stuff after =
-    
-    parts = link.split(delim, 1)
-
-    if "&" in parts[1]: # do it again incase there is time stamp in link
-        delim2 = "&" 
-        parts2 = parts[1].split(delim2, 1)
-        result = parts2[0]
-    else:
+    try:
+        # Handle mobile URLs
+        link = link.replace("m.youtube.com", "youtube.com")
+        
+        if "youtu.be" in link:
+            delim = "youtu.be/" # short links only have stuff after /
+        else:
+            delim = "watch?v=" # long links have stuff after =
+        
+        parts = link.split(delim, 1)
+        if len(parts) < 2:
+            print(f"ERROR: Could not find video ID in URL: {link}")
+            return None
+            
         result = parts[1]
-    
-
-
-    print(result)
+        if "&" in result: # handle timestamps and other parameters
+            result = result.split("&")[0]
+            
+        print(f"Extracted video ID: {result}")
+        return result
+    except Exception as e:
+        print(f"Error extracting video ID: {str(e)}")
+        return None
 
 class YTUrl(BaseModel):
     yt_url: str
 
     @validator("yt_url")
     def validate_yt_url(cls, v: str) -> str:
-
         print(f"Button Pressed: {v}")
 
         if not v or not v.strip():
@@ -44,7 +46,7 @@ class YTUrl(BaseModel):
         v = v.strip()
         
         # Basic YouTube URL validation
-        valid_domains = ["youtube.com", "youtu.be"]
+        valid_domains = ["youtube.com", "m.youtube.com", "youtu.be"]
         if not any(domain in v.lower() for domain in valid_domains):
             print(f"ERROR: Not a valid YT link")
             raise ValueError("Please enter a valid YouTube URL (must contain youtube.com or youtu.be)")
@@ -78,9 +80,14 @@ async def startup_event():
 async def submit_url(payload: YTUrl):
     try:
         yt_url = payload.yt_url
-        print(f"Correct yt_url: {yt_url}")
+        print(f"Processing URL: {yt_url}")
         videoId = getVideoId(yt_url)
-        return {"status": "received", "yt_url": yt_url}
+        
+        if not videoId:
+            raise ValueError("Could not extract video ID from URL")
+            
+        print(f"Extracted video ID: {videoId}")
+        return {"status": "received", "yt_url": yt_url, "video_id": videoId}
     except ValueError as e:
         logger.error("Invalid payload received: %s", str(e))
         print(f"Error processing payload: {str(e)}")

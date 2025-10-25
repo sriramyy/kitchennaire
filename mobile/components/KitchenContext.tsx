@@ -12,7 +12,9 @@ type KitchenContextType = {
   pantry: string[];
   loading: boolean;
   boughtItems: string[];
+  currentVideoId: string | null;
   loadRecipeFromLink: (link: string) => Promise<void>;
+  setCurrentVideoId: (id: string) => void;
   scanPantry: () => Promise<void>;
   uploadPhoto: () => Promise<void>;
   markItemBought: (item: string) => void;
@@ -33,6 +35,7 @@ export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [pantry, setPantry] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [boughtItems, setBoughtItems] = useState<string[]>([]);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   const loadRecipeFromLink = async (link: string) => {
     setLoading(true);
@@ -72,7 +75,20 @@ export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <KitchenContext.Provider
-      value={{ recipe, pantry, loading, boughtItems, loadRecipeFromLink, scanPantry, uploadPhoto, markItemBought, clearBoughtItems, addPantryItem }}>
+      value={{ 
+        recipe, 
+        pantry, 
+        loading, 
+        boughtItems, 
+        currentVideoId,
+        loadRecipeFromLink, 
+        setCurrentVideoId,
+        scanPantry, 
+        uploadPhoto, 
+        markItemBought, 
+        clearBoughtItems, 
+        addPantryItem 
+      }}>
       {children}
     </KitchenContext.Provider>
   );

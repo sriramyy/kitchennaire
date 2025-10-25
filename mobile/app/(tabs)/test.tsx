@@ -1,11 +1,14 @@
 import React, { useCallback, useRef, useState } from "react";
 import { View, Button } from "react-native";
 import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
+import { useKitchen } from '@/components/KitchenContext';
 
 export default function App() {
   const playerRef = useRef<YoutubeIframeRef>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const { currentVideoId } = useKitchen();
+  const videoId = currentVideoId || "_Zt1EuIEhvw"; // Use context video ID or fallback
 
   const onReady = useCallback(() => setReady(true), []);
   const onStateChange = useCallback((state: string) => {
@@ -40,7 +43,7 @@ export default function App() {
         ref={playerRef}
         height={300}
         play={playing}
-        videoId="_Zt1EuIEhvw"
+        videoId={videoId}
         onReady={onReady}
         onChangeState={onStateChange}
       />
