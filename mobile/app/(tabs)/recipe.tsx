@@ -13,7 +13,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 // For Android emulator: http://10.0.2.2:8000
 // For physical device: http://<your-computer-LAN-IP>:8000
 // Using hotspot IP
-const API_BASE = 'http://172.20.10.2:8000'; // please dont leak
+const API_BASE = 'http://172.20.10.6:8000'; // please dont leak
 // TODO: put in env
 
 export default function RecipeScreen() {
@@ -26,14 +26,14 @@ export default function RecipeScreen() {
     try {
       const payload = { yt_url: url };
       const jsonBody = JSON.stringify(payload);
-      
+
       console.log('Sending request to:', `${API_BASE}/submit_url`);
       console.log('Payload object:', payload);
       console.log('JSON string being sent:', jsonBody);
-      
+
       const res = await fetch(`${API_BASE}/submit_url`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -46,12 +46,12 @@ export default function RecipeScreen() {
 
       const data = JSON.parse(text);
       console.log('Backend responded:', data);
-      
+
       if (data.video_id) {
         setCurrentVideoId(data.video_id);
         console.log('Updated video ID:', data.video_id);
       }
-      
+
       return data;
     } catch (error: any) {
       console.error('Failed to submit URL:', error);
@@ -82,7 +82,7 @@ export default function RecipeScreen() {
     } catch (error: any) {
       console.error('onLoad error:', error);
       // Show the backend's error message or a fallback
-      const backendError = error?.message?.includes('detail') 
+      const backendError = error?.message?.includes('detail')
         ? JSON.parse(error.message).detail
         : 'Failed to submit URL. Please enter a valid YouTube URL';
       setError(backendError);
@@ -167,14 +167,14 @@ export default function RecipeScreen() {
         <Animated.View entering={FadeInUp} style={styles.recipeCard}>
           <View style={styles.recipeHeader}>
             <Text style={styles.recipeTitle}>{recipe.title}</Text>
-            
+
             <View style={styles.recipeMeta}>
               {/* Time (using recipe.timeInMinutes) */}
               <View style={styles.metaItem}>
                 <IconSymbol name="timer" size={16} color="#666" />
                 <Text style={styles.metaText}>{recipe.timeInMinutes} min</Text>
               </View>
-              
+
               {/* Video Duration (using recipe.videoDuration) */}
               <View style={styles.metaItem}>
                 <IconSymbol name="video" size={16} color="#666" />
@@ -189,10 +189,10 @@ export default function RecipeScreen() {
             {/* Map over the ingredients array from the recipe object */}
             {recipe.ingredients.map((item, index) => (
               <View key={index} style={styles.ingredientRow}>
-                <IconSymbol 
-                  name={item.isAvailable ? 'checkmark.circle.fill' : 'xmark.circle.fill'} 
-                  size={20} 
-                  color={item.isAvailable ? '#ff6b6b' : '#666'} 
+                <IconSymbol
+                  name={item.isAvailable ? 'checkmark.circle.fill' : 'xmark.circle.fill'}
+                  size={20}
+                  color={item.isAvailable ? '#ff6b6b' : '#666'}
                 />
                 <Text style={styles.ingredient}>{item.name}</Text>
               </View>
@@ -206,11 +206,11 @@ export default function RecipeScreen() {
               <IconSymbol name="bookmark" size={20} color="#ff6b6b" />
               <Text style={styles.secondaryButtonText}>Save</Text>
             </Pressable>
-            
+
             {/* Start Recipe Button */}
-            <Pressable 
-              style={styles.cookButton} 
-              onPress={() => router.push('/cook-mode')} 
+            <Pressable
+              style={styles.cookButton}
+              onPress={() => router.push('/cook-mode')}
             >
               <IconSymbol name="play" size={20} color="white" />
               <Text style={styles.cookButtonText}>Start Cooking</Text>
@@ -269,15 +269,15 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
   },
-  inputRow: { 
+  inputRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  input: { 
+  input: {
     flex: 1,
     fontSize: 16,
   },
-  btn: { 
+  btn: {
     backgroundColor: '#ff6b6b',
     paddingHorizontal: 20,
     justifyContent: 'center',
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   btnDisabled: {
     backgroundColor: '#ffb1b1',
   },
-  btnText: { 
+  btnText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
