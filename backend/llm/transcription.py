@@ -15,11 +15,11 @@ import difflib
 import tempfile
 from pathlib import Path
 from typing import Optional, Dict, List, Tuple
+import yt_dlp
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
-import yt_dlp
 
 # -------------------- CONFIG --------------------
 CHAT_MODEL = "gpt-4o-mini"  # LLM for recipe structuring
@@ -442,7 +442,7 @@ if __name__ == "__main__":
     parser.add_argument("--cookies", help="Path to cookies.txt exported from your browser (optional)")
     args = parser.parse_args()
 
-    url = args.url or input("Paste a YouTube cooking video URL: ").strip()
+    url = YTUrl.yt_url
     cookies = args.cookies
 
     try:
@@ -451,62 +451,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"ERROR: {e}")
         sys.exit(1)
-
-# --- Save extracted ingredients for Kitchennaire suggestions ---
-import os, json
-
-def save_ingredients_json(recipe_data, out_name="recipe_ingredients.json"):
-    """Takes the recipe dict (data) and saves ingredients as a simple JSON list."""
-    if not isinstance(recipe_data, dict) or "ingredients" not in recipe_data:
-        print("⚠️ No ingredients found in recipe data.")
-        return
-
-    ingredients = recipe_data["ingredients"]
-    items = []
-
-    for ing in ingredients:
-        if isinstance(ing, dict) and "name" in ing:
-            items.append({"name": ing["name"]})
-        elif isinstance(ing, str):
-            items.append({"name": ing})
-
-    if not items:
-        print("⚠️ Ingredient list was empty — nothing saved.")
-        return
-
-    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), out_name)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(items, f, indent=2, ensure_ascii=False)
-    print(f"✅ Saved recipe ingredients to: {out_path}")
-
-# Automatically run the saver if 'data' exists in memory
-try:
-    data = youtube_to_recipe(url, cookies=cookies)
-    print(json.dumps(data, indent=2, ensure_ascii=False))
-
-    # --- SAVE INGREDIENTS JSON ---
-        # --- SAVE INGREDIENTS JSON (FINAL) ---
-    from pathlib import Path
-    import json
-
-    out_path = Path(__file__).with_name("recipe_ingredients.json")
-    ingredients = data.get("ingredients", [])
-
-    # only keep those that actually have a name
-    cleaned = []
-    for ing in ingredients:
-        if isinstance(ing, dict) and ing.get("name"):
-            cleaned.append({"name": ing["name"]})
-
-    if cleaned:
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(cleaned, f, indent=2)
-        print(f"✅ Saved recipe ingredients to: {out_path}")
-    else:
-        print("⚠️ No valid ingredients found; file not written.")
-
-
-except Exception as e:
-    print(f"ERROR: {e}")
-    sys.exit(1)
-

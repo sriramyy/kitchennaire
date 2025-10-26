@@ -1,21 +1,22 @@
+// KitchenContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 
 // ------------------------------------------------------------------
-// UPDATED TYPES for structured recipe data
-// The Ingredient structure for your checkmark/x logic
+// TYPES for structured recipe data
 export type Ingredient = {
   name: string;
   isAvailable: boolean; // true for checkmark, false for 'x'
 };
 
-// The Recipe structure matching the data you expect from the backend
+// This Recipe type now matches the Python 'RecipeResponse' model
 export type Recipe = {
   title: string;
   timeInMinutes: number; // Time (in minutes)
   videoDuration: string; // Video Duration (e.g., "12:45")
   ingredients: Ingredient[]; // List of structured ingredients
-  youtubeLink?: string;
-  youtubeUrl?: string;
+  video_id?: string; // The video ID from the backend
+  youtubeLink?: string; // We'll add this manually
+  youtubeUrl?: string; // We'll add this manually
 };
 // ------------------------------------------------------------------
 
@@ -25,7 +26,7 @@ type KitchenContextType = {
   loading: boolean;
   boughtItems: string[];
   currentVideoId: string | null;
-  loadRecipeFromLink: (link: string) => Promise<void>;
+  loadRecipeFromLink: (link: string) => Promise<void>; // This will now throw errors
   setCurrentVideoId: (id: string) => void;
   scanPantry: () => Promise<void>;
   uploadPhoto: () => Promise<void>;
@@ -42,6 +43,10 @@ export const useKitchen = () => {
   return ctx;
 };
 
+// --- THIS IS THE IP FROM YOUR recipe.tsx ---
+// Make sure this is your computer's LAN IP, not localhost
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE;
+
 export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [pantry, setPantry] = useState<string[]>([]);
@@ -51,41 +56,56 @@ export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadRecipeFromLink = async (link: string) => {
     setLoading(true);
-    // Mock parsing YouTube link: simulate network work (where your API call/transcripts.py logic happens)
-    await new Promise((r) => setTimeout(r, 900));
+    setRecipe(null); // Clear the old recipe
 
-    // ------------------------------------------------------------------
-    // UPDATED MOCK RECIPE DATA
-    // This simulates the JSON response you would get from your FastAPI/Python backend
-    const mockIngredients: Ingredient[] = [
-      { name: 'Spaghetti', isAvailable: true },
-      { name: 'Olive Oil', isAvailable: true },
-      { name: 'Ground Beef', isAvailable: false }, // Missing item
-      { name: 'Canned Tomatoes', isAvailable: true },
-      { name: 'Onion', isAvailable: false }, // Missing item
-      { name: 'Garlic', isAvailable: true },
-      { name: 'Fresh Basil', isAvailable: false },
-    ];
-    
-    setRecipe({ 
-      title: 'Quick 30-Minute Bolognese Sauce', // Title from Python
-      timeInMinutes: 30, // Time from Python
-      videoDuration: '10:45', // Duration from Python
-      ingredients: mockIngredients, // Ingredients from Python
-      youtubeLink: link, 
-      youtubeUrl: link 
-    });
-    // ------------------------------------------------------------------
+    // We wrap this in a try/catch so the UI can catch the error
+    try {
+      const res = await fetch(`${API_BASE}/get_recipe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ yt_url: link }),
+      });
 
-    setBoughtItems([]);
-    setLoading(false);
+      if (!res.ok) {
+        // Get the error detail from the FastAPI server
+        const errData = await res.json();
+        throw new Error(errData.detail || 'Failed to fetch recipe from server');
+      }
+
+      const data: Recipe = await res.json();
+
+      // --- SET REAL DATA FROM PYTHON ---
+      setRecipe({
+        ...data,
+        youtubeLink: link, // Add the original link back in
+        youtubeUrl: link,
+      });
+      // ---------------------------------
+
+      if (data.video_id) {
+        setCurrentVideoId(data.video_id);
+      }
+
+      setBoughtItems([]);
+    } catch (error: any) {
+      console.error('Error in loadRecipeFromLink:', error);
+      // Re-throw the error so the UI component (recipe.tsx) can catch it
+      // and set the error message
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
+  // --- END OF UPDATED FUNCTION ---
+
 
   const scanPantry = async () => {
     setLoading(true);
     // Mock scanning - replace with real camera + vision processing
     await new Promise((r) => setTimeout(r, 1200));
-    // Example: detected Eggs and Salt
     setPantry((prev) => Array.from(new Set([...prev, 'Eggs', 'Salt'])));
     setLoading(false);
   };
@@ -107,19 +127,19 @@ export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <KitchenContext.Provider
-      value={{ 
-        recipe, 
-        pantry, 
-        loading, 
-        boughtItems, 
+      value={{
+        recipe,
+        pantry,
+        loading,
+        boughtItems,
         currentVideoId,
-        loadRecipeFromLink, 
+        loadRecipeFromLink,
         setCurrentVideoId,
-        scanPantry, 
-        uploadPhoto, 
-        markItemBought, 
-        clearBoughtItems, 
-        addPantryItem 
+        scanPantry,
+        uploadPhoto,
+        markItemBought,
+        clearBoughtItems,
+        addPantryItem
       }}>
       {children}
     </KitchenContext.Provider>
