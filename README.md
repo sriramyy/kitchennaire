@@ -1,6 +1,4 @@
-# kitchennaire
-## your kitchen assistant for better cooking
+# Kitchennaire
+**Modernize the way you cook.**
+<img width="250" height="250" alt="image" src="https://github.com/user-attachments/assets/052e451c-bc95-42b9-8725-472bbd36acbc" />
 
-
-### npm i --save-exact react-native-youtube-iframe@2.2.2
-^ need this command bc newest version doesnt work
