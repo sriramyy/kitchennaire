@@ -1,0 +1,47 @@
+{
+  "notes": null,
+  "items": [
+    {
+      "name": "orange",
+      "quantity_estimate": 3,
+      "unit": "count",
+      "brand_or_label": null,
+      "confidence": 1
+    },
+    {
+      "name": "egg",
+      "quantity_estimate": 6,
+      "unit": "count",
+      "brand_or_label": null,
+      "confidence": 1
+    },
+    {
+      "name": "cabbage",
+      "quantity_estimate": 1,
+      "unit": "count",
+      "brand_or_label": null,
+      "confidence": 1
+    },
+    {
+      "name": "cucumber",
+      "quantity_estimate": 2,
+      "unit": "count",
+      "brand_or_label": null,
+      "confidence": 1
+    },
+    {
+      "name": "tomato",
+      "quantity_estimate": 2,
+      "unit": "count",
+      "brand_or_label": null,
+      "confidence": 1
+    },
+    {
+      "name": "leafy greens",
+      "quantity_estimate": null,
+      "unit": null,
+      "brand_or_label": null,
+      "confidence": 0.8
+    }
+  ]
+}

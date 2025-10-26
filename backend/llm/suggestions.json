@@ -1,0 +1,33 @@
+{
+  "inventory": {
+    "have": [],
+    "missing": [
+      "heavy cream",
+      "ice cube",
+      "rock salt",
+      "sugar",
+      "vanilla extract",
+      "whole milk"
+    ],
+    "fuzzy_map": {
+      "whole milk": "",
+      "heavy cream": "",
+      "vanilla extract": "",
+      "sugar": "",
+      "ice cubes": "",
+      "rock salt": ""
+    }
+  },
+  "substitutions": {
+    "heavy cream": [],
+    "ice cube": [],
+    "rock salt": [],
+    "sugar": [],
+    "vanilla extract": [],
+    "whole milk": []
+  },
+  "meta": {
+    "pantry_items_count": 6,
+    "recipe_items_count": 6
+  }
+}
