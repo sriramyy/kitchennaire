@@ -9,9 +9,14 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export default function ShoppingScreen() {
   const { recipe, pantry, boughtItems, markItemBought, clearBoughtItems } = useKitchen();
 
-  const missing = recipe?.ingredients.filter((i) => !pantry.includes(i)) ?? [];
-  const bought = missing.filter((i) => boughtItems.includes(i));
-  const remaining = missing.filter((i) => !boughtItems.includes(i));
+  // CHANGED: Filter logic now compares item.name (string) with pantry (array of strings)
+  const missing = recipe?.ingredients.filter((i) => !pantry.includes(i.name)) ?? [];
+  
+  // CHANGED: Filter logic now compares item.name (string) with boughtItems (array of strings)
+  const bought = missing.filter((i) => boughtItems.includes(i.name));
+  
+  // CHANGED: Filter logic now compares item.name (string) with boughtItems (array of strings)
+  const remaining = missing.filter((i) => !boughtItems.includes(i.name));
 
   const progress = missing.length > 0 ? (bought.length / missing.length) * 100 : 0;
 
@@ -53,15 +58,18 @@ export default function ShoppingScreen() {
           <Text style={styles.sectionTitle}>Remaining Items</Text>
           {remaining.map((item, index) => (
             <AnimatedPressable
-              key={item}
+              // CHANGED: Use item.name as the key (it's a unique string)
+              key={item.name} 
               entering={FadeInUp.delay(300 + index * 50)}
               layout={Layout}
               style={styles.itemCard}
-              onPress={() => markItemBought(item)}>
+              // CHANGED: Pass item.name (string) to the function
+              onPress={() => markItemBought(item.name)}> 
               <View style={styles.checkbox}>
                 <IconSymbol name="circle" size={24} color="#ff6b6b" />
               </View>
-              <Text style={styles.itemText}>{item}</Text>
+              {/* CHANGED: Render item.name (string) inside the <Text> */}
+              <Text style={styles.itemText}>{item.name}</Text>
               <Text style={styles.actionHint}>Tap when bought</Text>
             </AnimatedPressable>
           ))}
@@ -79,15 +87,18 @@ export default function ShoppingScreen() {
               </View>
               {bought.map((item, index) => (
                 <AnimatedPressable
-                  key={item}
+                  // CHANGED: Use item.name as the key
+                  key={item.name}
                   entering={FadeInUp.delay(300 + index * 50)}
                   layout={Layout}
                   style={[styles.itemCard, styles.itemCardBought]}
-                  onPress={() => markItemBought(item)}>
+                  // CHANGED: Pass item.name (string) to the function
+                  onPress={() => markItemBought(item.name)}>
                   <View style={styles.checkbox}>
                     <IconSymbol name="checkmark.circle.fill" size={24} color="#32d74b" />
                   </View>
-                  <Text style={[styles.itemText, styles.itemTextBought]}>{item}</Text>
+                  {/* CHANGED: Render item.name (string) inside the <Text> */}
+                  <Text style={[styles.itemText, styles.itemTextBought]}>{item.name}</Text>
                 </AnimatedPressable>
               ))}
             </View>

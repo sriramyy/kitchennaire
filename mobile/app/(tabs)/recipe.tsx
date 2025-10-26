@@ -1,3 +1,5 @@
+// recipe.tsx (Updated)
+
 import { Image } from 'expo-image';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import React, { useState } from 'react';
@@ -8,63 +10,17 @@ import { useKitchen } from '@/components/KitchenContext'; // Imports the updated
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-// Prefer putting this in an env var: EXPO_PUBLIC_API_BASE_URL
-// For iOS simulator: http://127.0.0.1:8000
-// For Android emulator: http://10.0.2.2:8000
-// For physical device: http://<your-computer-LAN-IP>:8000
-// Using hotspot IP
-const API_BASE = 'http://172.20.10.6:8000'; // please dont leak
-// TODO: put in env
+// This is no longer used directly in this file, but is fine to keep as a reference
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE ; // please dont leak
 
 export default function RecipeScreen() {
-  const { recipe, loadRecipeFromLink, loading, setCurrentVideoId } = useKitchen();
+  // Get the correct functions and state from the context
+  const { recipe, loadRecipeFromLink, loading } = useKitchen();
   const [link, setLink] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const sendUrl = async (url: string) => {
-    try {
-      const payload = { yt_url: url };
-      const jsonBody = JSON.stringify(payload);
-
-      console.log('Sending request to:', `${API_BASE}/submit_url`);
-      console.log('Payload object:', payload);
-      console.log('JSON string being sent:', jsonBody);
-
-      const res = await fetch(`${API_BASE}/submit_url`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: jsonBody,
-      });
-
-      console.log('Response status:', res.status);
-      const text = await res.text();
-      console.log('Raw response:', text);
-
-      const data = JSON.parse(text);
-      console.log('Backend responded:', data);
-
-      if (data.video_id) {
-        setCurrentVideoId(data.video_id);
-        console.log('Updated video ID:', data.video_id);
-      }
-
-      return data;
-    } catch (error: any) {
-      console.error('Failed to submit URL:', error);
-      if (error?.name) console.error('Error type:', error.name);
-      if (error?.message) console.error('Error message:', error.message);
-      if (error instanceof TypeError) {
-        console.error('Network error - check if backend is reachable at:', API_BASE);
-      }
-      throw error;
-    }
-  };
-
-  const onLoad = async () => {
+  const onLoad = async () => { // new onload
     setError(''); // Clear any previous errors
     const url = link.trim();
     if (!url) {
@@ -73,19 +29,17 @@ export default function RecipeScreen() {
     }
     console.log('Starting onLoad with URL:', url);
     try {
-      // send to backend (will print on FastAPI console)
-      const result = await sendUrl(url);
-      console.log('sendUrl completed with result:', result);
-      // keep your existing behavior 
-      // populates 'recipe' with the structured data.
+      // This one function now does everything:
+      // 1. Calls /get_recipe
+      // 2. Gets the full recipe with 'isAvailable'
+      // 3. Sets the 'recipe' state in the context
       await loadRecipeFromLink(url);
+      console.log('loadRecipeFromLink completed successfully.');
+
     } catch (error: any) {
       console.error('onLoad error:', error);
-      // Show the backend's error message or a fallback
-      const backendError = error?.message?.includes('detail')
-        ? JSON.parse(error.message).detail
-        : 'Failed to submit URL. Please enter a valid YouTube URL';
-      setError(backendError);
+      // Set the error message from the hook
+      setError(error.message || 'An unknown error occurred.');
     }
   };
 
@@ -119,15 +73,16 @@ export default function RecipeScreen() {
               autoCorrect={false}
             />
           </View>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <Pressable
+        </View>
+        {/* Error text will now appear below the input row */}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Pressable
             style={[styles.btn, loading && styles.btnDisabled]}
-            onPress={onLoad}
+            onPress={onLoad} // This now calls the correct onLoad
             disabled={loading}
           >
             <Text style={styles.btnText}>{loading ? 'Loading...' : 'Get Recipe'}</Text>
           </Pressable>
-        </View>
 
         <View style={styles.quickRecipes}>
           <Text style={styles.quickTitle}>Quick Recipes</Text>
@@ -137,9 +92,15 @@ export default function RecipeScreen() {
                 key={item.name}
                 style={styles.quickCard}
                 onPress={async () => {
-                  setLink(item.link);
-                  await sendUrl(item.link);
-                  await loadRecipeFromLink(item.link);
+                  setLink(item.link); // Update text input
+                  setError('');       // Clear error
+                  try {
+                    // Directly call the context function
+                    await loadRecipeFromLink(item.link);
+                  } catch (error: any) {
+                    console.error('Quick recipe error:', error);
+                    setError(error.message || 'Failed to load recipe.');
+                  }
                 }}
               >
                 <Image
@@ -160,9 +121,7 @@ export default function RecipeScreen() {
         </View>
       )}
 
-      {/* The Recipe Card: Uses data imported via the useKitchen context (which 
-        is populated by your backend API call).
-      */}
+      {/* The Recipe Card: This will now appear when 'recipe' is set */}
       {recipe && (
         <Animated.View entering={FadeInUp} style={styles.recipeCard}>
           <View style={styles.recipeHeader}>
@@ -172,13 +131,13 @@ export default function RecipeScreen() {
               {/* Time (using recipe.timeInMinutes) */}
               <View style={styles.metaItem}>
                 <IconSymbol name="timer" size={16} color="#666" />
-                <Text style={styles.metaText}>{recipe.timeInMinutes} min</Text>
+                <Text style={styles.metaText}>{recipe.timeInMinutes || 12} min</Text>
               </View>
 
               {/* Video Duration (using recipe.videoDuration) */}
               <View style={styles.metaItem}>
                 <IconSymbol name="video" size={16} color="#666" />
-                <Text style={styles.metaText}>{recipe.videoDuration}</Text>
+                <Text style={styles.metaText}>{recipe.videoDuration || '4:22'}</Text>
               </View>
             </View>
           </View>
@@ -229,8 +188,9 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ff3b30',
     fontSize: 14,
-    marginTop: 4,
-    marginLeft: 8,
+    marginTop: 8, // Added margin
+    marginBottom: 4, // Added margin
+    textAlign: 'center', // Centered text
   },
   content: {
     padding: 16,
@@ -259,6 +219,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    gap: 12, // Added gap for spacing
   },
   inputContainer: {
     flex: 1,
@@ -279,8 +240,10 @@ const styles = StyleSheet.create({
   },
   btn: {
     backgroundColor: '#ff6b6b',
+    paddingVertical: 14, // Made button taller
     paddingHorizontal: 20,
     justifyContent: 'center',
+    alignItems: 'center', // Center text
     borderRadius: 12,
   },
   btnDisabled: {

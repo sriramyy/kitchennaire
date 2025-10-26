@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 export default function HomeScreen() {
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#FFE1C6', dark: '#2C1810' }}
+      headerBackgroundColor={{ light: '#FFE1C6', dark: '#69270dff' }}
       headerImage={
         <Image
           source={{ uri: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=2670&auto=format&fit=crop' }}
@@ -29,7 +29,7 @@ export default function HomeScreen() {
       </ThemedView>
 
       <ThemedView style={styles.featureContainer}>
-        <ThemedText type="subtitle">🎯 Recipe Management</ThemedText>
+        <ThemedText type="subtitle">Recipe Management</ThemedText>
         <ThemedText>
           • Paste YouTube recipe links{'\n'}
           • Get instant ingredient lists{'\n'}
@@ -38,7 +38,7 @@ export default function HomeScreen() {
       </ThemedView>
 
       <ThemedView style={styles.featureContainer}>
-        <ThemedText type="subtitle">📦 Smart Pantry</ThemedText>
+        <ThemedText type="subtitle">Smart Pantry</ThemedText>
         <ThemedText>
           • Scan your ingredients{'\n'}
           • Keep track of what you have{'\n'}
@@ -47,7 +47,7 @@ export default function HomeScreen() {
       </ThemedView>
 
       <ThemedView style={styles.featureContainer}>
-        <ThemedText type="subtitle">🛒 Shopping Made Easy</ThemedText>
+        <ThemedText type="subtitle">Shopping Made Easy</ThemedText>
         <ThemedText>
           • Auto-generated shopping lists{'\n'}
           • Mark items as you buy them{'\n'}

@@ -8,7 +8,8 @@ import { useKitchen } from "../../components/KitchenContext";
 
 // --- CONFIGURATION ---
 // Base URL for your FastAPI backend running alongside the webcam script
-const BACKEND_URL = 'http://172.20.10.6:8000'; // REPLACE WITH YOUR SERVER IP
+const BACKEND_URL = process.env.EXPO_PUBLIC_API_BASE;
+; // REPLACE WITH YOUR SERVER IP
 // How often to fetch the latest gesture from the backend (e.g., every 500ms)
 const GESTURE_POLL_INTERVAL_MS = 500;
 // -----------------------
@@ -112,10 +113,10 @@ export default function App() {
     };
   }, []); // Run only on mount and unmount
 
-  // --- YOUTUBE GESTURE CONTROL ---
+// --- YOUTUBE GESTURE CONTROL ---
   useEffect(() => {
-    // Only control video if playing, ready, and backend is NOT calibrating
-    if (!playing || !ready || isBackendCalibrating) return;
+    // Only control video if ready and backend is NOT calibrating
+    if (!ready || isBackendCalibrating) return;
 
     const controlVideo = (gestureCmd) => {
       const api = playerRef.current;
@@ -123,10 +124,10 @@ export default function App() {
 
       // Map gesture text to player actions
       switch (gestureCmd) {
-        case "Thumbs Up": setPlaying(true); break;  // Play
-        case "Thumbs Down": setPlaying(false); break; // Pause
-        case "Punch": seekBy(10); break;       // Seek forward
-        case "OK": seekBy(-10); break;      // Seek backward
+        case "High Five": setPlaying(true); break;  // Play
+        case "High Five": setPlaying(false); break; // Pause
+        case "Thumbs Up": seekBy(10); break;       // Seek forward
+        case "Thumbs Down": seekBy(-10); break;      // Seek backward
         // Add cases for "High Five" or "Blank" if needed
         default: break; // Do nothing for "Blank", "Unknown", errors, etc.
       }
@@ -135,8 +136,6 @@ export default function App() {
     controlVideo(gesture); // Call control function with the latest fetched gesture
 
   }, [gesture, ready, playing, isBackendCalibrating, seekBy]); // Dependencies
-
-
   // --- RENDERING (No Camera, Just Display) ---
 
   const playerHeight = Math.max(120, HALF - CONTROLS_H);
