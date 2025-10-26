@@ -1,4 +1,5 @@
-# chefly
+# kitchennaire
+## your kitchen assistant for better cooking
 
 
 ### npm i --save-exact react-native-youtube-iframe@2.2.2
