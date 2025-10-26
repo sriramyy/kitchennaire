@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { useKitchen } from '@/components/KitchenContext';
+import { useKitchen } from '@/components/KitchenContext'; // Imports the updated Recipe type
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -13,7 +13,8 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 // For Android emulator: http://10.0.2.2:8000
 // For physical device: http://<your-computer-LAN-IP>:8000
 // Using hotspot IP
-const API_BASE = 'http://172.20.10.2:8000';
+const API_BASE = 'http://172.20.10.2:8000'; // please dont leak
+// TODO: put in env
 
 export default function RecipeScreen() {
   const { recipe, loadRecipeFromLink, loading, setCurrentVideoId } = useKitchen();
@@ -75,7 +76,8 @@ export default function RecipeScreen() {
       // send to backend (will print on FastAPI console)
       const result = await sendUrl(url);
       console.log('sendUrl completed with result:', result);
-      // keep your existing behavior if desired
+      // keep your existing behavior 
+      // populates 'recipe' with the structured data.
       await loadRecipeFromLink(url);
     } catch (error: any) {
       console.error('onLoad error:', error);
@@ -158,17 +160,67 @@ export default function RecipeScreen() {
         </View>
       )}
 
+      {/* The Recipe Card: Uses data imported via the useKitchen context (which 
+        is populated by your backend API call).
+      */}
       {recipe && (
         <Animated.View entering={FadeInUp} style={styles.recipeCard}>
-          {/* ... the rest of your recipe UI unchanged ... */}
+          <View style={styles.recipeHeader}>
+            <Text style={styles.recipeTitle}>{recipe.title}</Text>
+            
+            <View style={styles.recipeMeta}>
+              {/* Time (using recipe.timeInMinutes) */}
+              <View style={styles.metaItem}>
+                <IconSymbol name="timer" size={16} color="#666" />
+                <Text style={styles.metaText}>{recipe.timeInMinutes} min</Text>
+              </View>
+              
+              {/* Video Duration (using recipe.videoDuration) */}
+              <View style={styles.metaItem}>
+                <IconSymbol name="video" size={16} color="#666" />
+                <Text style={styles.metaText}>{recipe.videoDuration}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Ingredients List */}
+          <View style={styles.ingredientsContainer}>
+            <Text style={styles.ingredientsTitle}>Ingredients</Text>
+            {/* Map over the ingredients array from the recipe object */}
+            {recipe.ingredients.map((item, index) => (
+              <View key={index} style={styles.ingredientRow}>
+                <IconSymbol 
+                  name={item.isAvailable ? 'checkmark.circle.fill' : 'xmark.circle.fill'} 
+                  size={20} 
+                  color={item.isAvailable ? '#ff6b6b' : '#666'} 
+                />
+                <Text style={styles.ingredient}>{item.name}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.buttonRow}>
+            {/* Save Recipe Button */}
+            <Pressable style={styles.secondaryButton}>
+              <IconSymbol name="bookmark" size={20} color="#ff6b6b" />
+              <Text style={styles.secondaryButtonText}>Save</Text>
+            </Pressable>
+            
+            {/* Start Recipe Button */}
+            <Pressable 
+              style={styles.cookButton} 
+              onPress={() => router.push('/cook-mode')} 
+            >
+              <IconSymbol name="play" size={20} color="white" />
+              <Text style={styles.cookButtonText}>Start Cooking</Text>
+            </Pressable>
+          </View>
         </Animated.View>
       )}
     </ScrollView>
   );
 }
-
-// styles unchanged...
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -185,6 +237,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   header: {
+    marginTop: 55,
     marginBottom: 8,
   },
   headerTitle: {

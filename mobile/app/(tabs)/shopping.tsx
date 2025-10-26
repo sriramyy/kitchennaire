@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerTitle: {
+    marginTop: 55,
     fontSize: 28,
     fontWeight: '700',
     color: '#000',

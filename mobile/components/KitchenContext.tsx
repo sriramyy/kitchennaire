@@ -1,11 +1,23 @@
 import React, { createContext, useContext, useState } from 'react';
 
+// ------------------------------------------------------------------
+// UPDATED TYPES for structured recipe data
+// The Ingredient structure for your checkmark/x logic
+export type Ingredient = {
+  name: string;
+  isAvailable: boolean; // true for checkmark, false for 'x'
+};
+
+// The Recipe structure matching the data you expect from the backend
 export type Recipe = {
   title: string;
-  ingredients: string[];
+  timeInMinutes: number; // Time (in minutes)
+  videoDuration: string; // Video Duration (e.g., "12:45")
+  ingredients: Ingredient[]; // List of structured ingredients
   youtubeLink?: string;
   youtubeUrl?: string;
 };
+// ------------------------------------------------------------------
 
 type KitchenContextType = {
   recipe: Recipe | null;
@@ -39,12 +51,32 @@ export const KitchenProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const loadRecipeFromLink = async (link: string) => {
     setLoading(true);
-    // Mock parsing YouTube link: simulate network work
+    // Mock parsing YouTube link: simulate network work (where your API call/transcripts.py logic happens)
     await new Promise((r) => setTimeout(r, 900));
 
-    // Simple mock recipe data. In a real app you'd fetch/parse video or use an API.
-    const mockIngredients = ['Eggs', 'Flour', 'Milk', 'Butter', 'Salt'];
-    setRecipe({ title: `Recipe from ${link || 'YouTube'}`, ingredients: mockIngredients, youtubeLink: link, youtubeUrl: link });
+    // ------------------------------------------------------------------
+    // UPDATED MOCK RECIPE DATA
+    // This simulates the JSON response you would get from your FastAPI/Python backend
+    const mockIngredients: Ingredient[] = [
+      { name: 'Spaghetti', isAvailable: true },
+      { name: 'Olive Oil', isAvailable: true },
+      { name: 'Ground Beef', isAvailable: false }, // Missing item
+      { name: 'Canned Tomatoes', isAvailable: true },
+      { name: 'Onion', isAvailable: false }, // Missing item
+      { name: 'Garlic', isAvailable: true },
+      { name: 'Fresh Basil', isAvailable: false },
+    ];
+    
+    setRecipe({ 
+      title: 'Quick 30-Minute Bolognese Sauce', // Title from Python
+      timeInMinutes: 30, // Time from Python
+      videoDuration: '10:45', // Duration from Python
+      ingredients: mockIngredients, // Ingredients from Python
+      youtubeLink: link, 
+      youtubeUrl: link 
+    });
+    // ------------------------------------------------------------------
+
     setBoughtItems([]);
     setLoading(false);
   };

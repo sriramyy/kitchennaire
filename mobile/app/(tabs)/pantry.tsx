@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   header: {
+    marginTop: 55,
     marginBottom: 8,
   },
   headerTitle: {
